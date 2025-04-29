@@ -216,7 +216,7 @@ public class MapGenerationUtils {
         int minDistValue = Integer.MAX_VALUE;
         int minDistIndex = -1;
         for (int i = 0; i < mapColors.length; i++) {
-            int dist = Math.abs(rgb[0] - mapColors[i][0]) + Math.abs(rgb[1] - mapColors[i][1]) + Math.abs(rgb[2] - mapColors[i][2]);
+            int dist = distanceBetweenRgbValues(rgb, mapColors[i]);
             if (dist < minDistValue) {
                 minDistValue = dist;
                 minDistIndex = i;
@@ -233,6 +233,13 @@ public class MapGenerationUtils {
         return (((rgb[0] << 16) | (rgb[1] << 8) | rgb[2]));
     }
 
+    public static int distanceBetweenRgbValues(int rgb1, int rgb2) {
+        return distanceBetweenRgbValues(rgbIntToRgbArray(rgb1), rgbIntToRgbArray(rgb2));
+    }
+    public static int distanceBetweenRgbValues(int[] rgb1, int[] rgb2) {
+        return Math.abs(rgb1[0]-rgb2[0]) + Math.abs(rgb1[1]-rgb2[1]) + Math.abs(rgb1[2]-rgb2[2]);
+    }
+
     public static BufferedImage resizeBufferedImage(BufferedImage image, int w, int h) {
         BufferedImage newImage = new BufferedImage(w, h, image.getType());
         int oldH = image.getHeight();
@@ -242,20 +249,15 @@ public class MapGenerationUtils {
 
         for (int x = 0; x < w; x++) {
             for (int y = 0; y < h; y++) {
-                System.out.println(stepSizeX);
-                System.out.println(stepSizeY);
                 //scansize is stepSizeX as it refers to how big the array will be * height, or something else entirely different im not sure, see javadocs for further explanation
                 int[] rgbsRaw = image.getRGB((int)Math.round(x*stepSizeX), (int)Math.round(y*stepSizeY), (int)Math.round(stepSizeX), (int)Math.round(stepSizeY), null, 0, (int) (stepSizeX));
-                System.out.println(rgbsRaw);
                 int rTotal = 0, gTotal = 0, bTotal = 0;
                 for (int rgb : rgbsRaw) {
                     rTotal += rgbIntToRgbArray(rgb)[0];
                     gTotal += rgbIntToRgbArray(rgb)[1];
                     bTotal += rgbIntToRgbArray(rgb)[2];
                 }
-                System.out.println(rTotal);
                 int newRgb = rgbArrayToRgbInt(new int[] {rTotal / rgbsRaw.length, gTotal / rgbsRaw.length, bTotal / rgbsRaw.length});
-                System.out.println(newRgb);
                 newImage.setRGB(x, y, newRgb);
             }
         }
