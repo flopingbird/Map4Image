@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "package": "com.flopingbird.map4image.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "MapMixin"
+  ],
+  "client": [
+
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
