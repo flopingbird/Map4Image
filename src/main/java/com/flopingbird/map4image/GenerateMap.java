@@ -10,6 +10,7 @@ import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.net.URL;
 
 public class GenerateMap {
     //see https://minecraft.wiki/w/Map_item_format "Full color tables" for reference, ID needs to be shifted by 4 to compensate for transparent colors
@@ -220,12 +221,12 @@ public class GenerateMap {
         {19, 11, 8}
     };
 
-    public static byte findClosetMapColorByte (int r, int g, int b) {
+    public static byte findClosetMapColorByte (int[] rgb) {
         //TODO add transparency
         int minDistValue = Integer.MAX_VALUE;
         int minDistIndex = -1;
         for (int i = 0; i < mapColors.length; i++) {
-            int dist = Math.abs(r - mapColors[i][0]) + Math.abs(g - mapColors[i][1]) + Math.abs(b - mapColors[i][2]);
+            int dist = Math.abs(rgb[0] - mapColors[i][0]) + Math.abs(rgb[1] - mapColors[i][1]) + Math.abs(rgb[2] - mapColors[i][2]);
             if (dist < minDistValue) {
                 minDistValue = dist;
                 minDistIndex = i;
@@ -235,15 +236,50 @@ public class GenerateMap {
         return (byte) (minDistIndex + 4);
     }
 
+    public static int[] rgbIntToRgbArray(int rgb) {
+        return new int[]{(rgb & 0xff0000) >> 16, (rgb & 0xff00) >> 8, rgb & 0xff};
+    }
+
+    public static BufferedImage resizeBufferedImage(BufferedImage image, int w, int h) {
+        BufferedImage newImage = new BufferedImage(w, h, image.getType());
+        int oldH = image.getHeight();
+        int oldW = image.getWidth();
+        double stepSizeX = ((double)oldW)/w;
+        double stepSizeY = ((double)oldH)/h;
+
+        for (int x = 0; x < w; x++) {
+            for (int y = 0; y < h; y++) {
+                System.out.println(stepSizeX);
+                System.out.println(stepSizeY);
+                //scansize is stepSizeX as it refers to how big the array will be * height, or something else entirely different im not sure, see javadocs for further explanation
+                int[] rgbsRaw = image.getRGB((int)Math.round(x*stepSizeX), (int)Math.round(y*stepSizeY), (int)Math.round(stepSizeX), (int)Math.round(stepSizeY), null, 0, (int) (stepSizeX));
+                System.out.println(rgbsRaw);
+                int rTotal = 0, gTotal = 0, bTotal = 0;
+                for (int rgb : rgbsRaw) {
+                    rTotal += rgbIntToRgbArray(rgb)[0];
+                    gTotal += rgbIntToRgbArray(rgb)[1];
+                    bTotal += rgbIntToRgbArray(rgb)[2];
+                }
+                System.out.println(rTotal);
+                int newRgb = (((rTotal / rgbsRaw.length << 16) | (gTotal / rgbsRaw.length << 8) | bTotal / rgbsRaw.length));
+                System.out.println(newRgb);
+                newImage.setRGB(x, y, newRgb);
+            }
+        }
+        return newImage;
+    }
+
     public static ItemStack generateMap(BufferedImage image, ServerLevel level) {
         //TODO keep map IDs in different serverLevel or try to get rid of having to pass it
         ServerLevel serverLevel = level;
+
+        image = resizeBufferedImage(image, 128, 128);
 
         byte[][] colorMap = new byte[128][128];
         for (int j = 0; j < colorMap.length; j++) {
             for (int i = 0; i < colorMap.length; i++) {
                 int rgb = image.getRGB(i, j);
-                colorMap[i][j] = findClosetMapColorByte((rgb & 0xff0000) >> 16, (rgb & 0xff00) >> 8, rgb & 0xff);
+                colorMap[i][j] = findClosetMapColorByte(rgbIntToRgbArray(rgb));
             }
         }
 
@@ -265,9 +301,8 @@ public class GenerateMap {
     }
 
     public static BufferedImage getBufferedImageFromLink(String link) {
-        //TODO remove hard coded image support
         try {
-            return ImageIO.read(GenerateMap.class.getClassLoader().getResource("assets/map4image/test image.jpg"));
+            return ImageIO.read(new URL(link).openStream());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
