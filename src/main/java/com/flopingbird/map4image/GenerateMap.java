@@ -15,12 +15,12 @@ import java.net.URL;
 import static com.flopingbird.map4image.MapGenerationUtils.*;
 
 public class GenerateMap {
-    public static ItemStack generateMap(BufferedImage image, ServerLevel level) {
+    public static ItemStack generateMap(BufferedImage image, ServerLevel level, DitherType ditherType) {
         //TODO keep map IDs in different serverLevel or try to get rid of having to pass it
         ServerLevel serverLevel = level;
         image = resizeBufferedImage(image, 128, 128);
 
-        byte[][] colorMap = ditherImageToMinecraftMapColors(image);
+        byte[][] colorMap = ditherImageToMinecraftMapColors(image, ditherType);
 
         //TODO fix this process as it burns through 1 map ID and dedicates another to the image, which while not likely a save runs out of 2 billion IDs, it is sloppy
         MapItemSavedData mapData = MapItemSavedData.createFresh(0.0, 0.0, (byte)1, false, false, serverLevel.dimension());
@@ -46,4 +46,6 @@ public class GenerateMap {
             throw new RuntimeException(e);
         }
     }
+
+
 }

@@ -272,23 +272,31 @@ public class MapGenerationUtils {
     }
 
     //Flyod-Steinberg dithering
-    public static byte[][] ditherImageToMinecraftMapColors(BufferedImage image) {
+    public static byte[][] ditherImageToMinecraftMapColors(BufferedImage image, DitherType dither) {
         byte[][] colorMap = new byte[128][128];
         for (int y = 0; y < colorMap.length; y++) {
             for (int x = 0; x < colorMap.length; x++) {
                 int rgb = image.getRGB(x, y);
                 int[] closestColor = findClosetMapColorByte(rgbIntToRgbArray(rgb));
                 colorMap[x][y] = (byte) closestColor[0];
-                int[] quantizationError = subRgbValues(rgbIntToRgbArray(rgb), rgbIntToRgbArray(closestColor[1]));
-                //TODO hey maybe 1 thousand if statments isnt a good idea here
-                if (x != colorMap.length-1)
-                    image.setRGB(x+1, y, rgbArrayToRgbInt(clampRgbValue(addRgbValues(rgbIntToRgbArray(image.getRGB(x+1, y)), scaleRgbValue(quantizationError, 7.0/16)))));
-                if (x != 0 && y != colorMap.length-1)
-                    image.setRGB(x-1, y+1, rgbArrayToRgbInt(clampRgbValue(addRgbValues(rgbIntToRgbArray(image.getRGB(x-1, y+1)), scaleRgbValue(quantizationError, 3.0/16)))));
-                if (y != colorMap.length-1)
-                    image.setRGB(x, y+1, rgbArrayToRgbInt(clampRgbValue(addRgbValues(rgbIntToRgbArray(image.getRGB(x, y+1)), scaleRgbValue(quantizationError, 5.0/16)))));
-                if (x != colorMap.length-1 && y != colorMap.length-1)
-                    image.setRGB(x+1, y+1, rgbArrayToRgbInt(clampRgbValue(addRgbValues(rgbIntToRgbArray(image.getRGB(x+1, y+1)), scaleRgbValue(quantizationError, 1.0/16)))));
+                //TODO change computation surrounding rgb values, objects will be cleaner but idk if they will cause performance shennigans
+                switch(dither) {
+                    case DitherType.FLOYDSTEINBERG:
+                        int[] quantizationError = subRgbValues(rgbIntToRgbArray(rgb), rgbIntToRgbArray(closestColor[1]));
+                        //TODO hey maybe 1 thousand if statments isnt a good idea here
+                        if (x != colorMap.length-1)
+                            image.setRGB(x+1, y, rgbArrayToRgbInt(clampRgbValue(addRgbValues(rgbIntToRgbArray(image.getRGB(x+1, y)), scaleRgbValue(quantizationError, 7.0/16)))));
+                        if (x != 0 && y != colorMap.length-1)
+                            image.setRGB(x-1, y+1, rgbArrayToRgbInt(clampRgbValue(addRgbValues(rgbIntToRgbArray(image.getRGB(x-1, y+1)), scaleRgbValue(quantizationError, 3.0/16)))));
+                        if (y != colorMap.length-1)
+                            image.setRGB(x, y+1, rgbArrayToRgbInt(clampRgbValue(addRgbValues(rgbIntToRgbArray(image.getRGB(x, y+1)), scaleRgbValue(quantizationError, 5.0/16)))));
+                        if (x != colorMap.length-1 && y != colorMap.length-1)
+                            image.setRGB(x+1, y+1, rgbArrayToRgbInt(clampRgbValue(addRgbValues(rgbIntToRgbArray(image.getRGB(x+1, y+1)), scaleRgbValue(quantizationError, 1.0/16)))));
+                        break;
+                    case DitherType.NONE:
+                        break;
+                }
+
             }
         }
         return colorMap;
@@ -317,4 +325,6 @@ public class MapGenerationUtils {
         }
         return newImage;
     }
+
+    public enum DitherType{FLOYDSTEINBERG, NONE}
 }
