@@ -211,19 +211,22 @@ public class MapGenerationUtils {
             {19, 11, 8}
     };
 
-    public static byte findClosetMapColorByte (int[] rgb) {
+    //returns int array first value being the coresponding map color byte and the second value being the coresponding rgb int value
+    public static int[] findClosetMapColorByte (int[] rgb) {
         //TODO add transparency
         int minDistValue = Integer.MAX_VALUE;
         int minDistIndex = -1;
+        int[] rgbValue = new int[0];
         for (int i = 0; i < mapColors.length; i++) {
             int dist = distanceBetweenRgbValues(rgb, mapColors[i]);
             if (dist < minDistValue) {
+                rgbValue = mapColors[i];
                 minDistValue = dist;
                 minDistIndex = i;
             }
         }
         //shift by 4 to account for transparency IDs discussed above
-        return (byte) (minDistIndex + 4);
+        return new int[]{(minDistIndex + 4), rgbArrayToRgbInt(rgbValue)};
     }
 
     public static int[] rgbIntToRgbArray(int rgb) {
@@ -238,6 +241,57 @@ public class MapGenerationUtils {
     }
     public static int distanceBetweenRgbValues(int[] rgb1, int[] rgb2) {
         return Math.abs(rgb1[0]-rgb2[0]) + Math.abs(rgb1[1]-rgb2[1]) + Math.abs(rgb1[2]-rgb2[2]);
+    }
+
+    public static int addRgbValues(int rgb1, int rgb2) {
+        return rgbArrayToRgbInt(addRgbValues(rgbIntToRgbArray(rgb1),  rgbIntToRgbArray(rgb2)));
+    }
+    public static int[] addRgbValues(int[] rgb1, int[] rgb2) {
+        return new int[]{rgb1[0]+rgb2[0], rgb1[1]+rgb2[1], rgb1[2]+rgb2[2]};
+    }
+
+    public static int subRgbValues(int rgb1, int rgb2) {
+        return rgbArrayToRgbInt(subRgbValues(rgbIntToRgbArray(rgb1),  rgbIntToRgbArray(rgb2)));
+    }
+    public static int[] subRgbValues(int[] rgb1, int[] rgb2) {
+        return new int[]{rgb1[0]-rgb2[0], rgb1[1]-rgb2[1], rgb1[2]-rgb2[2]};
+    }
+
+    public static int scaleRgbValue(int rgb, double scale) {
+        return rgbArrayToRgbInt(scaleRgbValue(rgbIntToRgbArray(rgb), scale));
+    }
+    public static int[] scaleRgbValue(int[] rgb, double scale) {
+        return new int[]{(int)(rgb[0]*scale), (int)(rgb[1]*scale), (int)(rgb[2]*scale)};
+    }
+
+    public static int clampRgbValue(int rgb) {
+        return rgbArrayToRgbInt(clampRgbValue(rgbIntToRgbArray(rgb)));
+    }
+    public static int[] clampRgbValue(int[] rgb) {
+        return new int[]{Math.clamp(rgb[0], 0, 255), Math.clamp(rgb[1], 0, 255), Math.clamp(rgb[2], 0, 255)};
+    }
+
+    //Flyod-Steinberg dithering
+    public static byte[][] ditherImageToMinecraftMapColors(BufferedImage image) {
+        byte[][] colorMap = new byte[128][128];
+        for (int y = 0; y < colorMap.length; y++) {
+            for (int x = 0; x < colorMap.length; x++) {
+                int rgb = image.getRGB(x, y);
+                int[] closestColor = findClosetMapColorByte(rgbIntToRgbArray(rgb));
+                colorMap[x][y] = (byte) closestColor[0];
+                int[] quantizationError = subRgbValues(rgbIntToRgbArray(rgb), rgbIntToRgbArray(closestColor[1]));
+                //TODO hey maybe 1 thousand if statments isnt a good idea here
+                if (x != colorMap.length-1)
+                    image.setRGB(x+1, y, rgbArrayToRgbInt(clampRgbValue(addRgbValues(rgbIntToRgbArray(image.getRGB(x+1, y)), scaleRgbValue(quantizationError, 7.0/16)))));
+                if (x != 0 && y != colorMap.length-1)
+                    image.setRGB(x-1, y+1, rgbArrayToRgbInt(clampRgbValue(addRgbValues(rgbIntToRgbArray(image.getRGB(x-1, y+1)), scaleRgbValue(quantizationError, 3.0/16)))));
+                if (y != colorMap.length-1)
+                    image.setRGB(x, y+1, rgbArrayToRgbInt(clampRgbValue(addRgbValues(rgbIntToRgbArray(image.getRGB(x, y+1)), scaleRgbValue(quantizationError, 5.0/16)))));
+                if (x != colorMap.length-1 && y != colorMap.length-1)
+                    image.setRGB(x+1, y+1, rgbArrayToRgbInt(clampRgbValue(addRgbValues(rgbIntToRgbArray(image.getRGB(x+1, y+1)), scaleRgbValue(quantizationError, 1.0/16)))));
+            }
+        }
+        return colorMap;
     }
 
     public static BufferedImage resizeBufferedImage(BufferedImage image, int w, int h) {

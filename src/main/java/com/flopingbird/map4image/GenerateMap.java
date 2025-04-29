@@ -20,13 +20,7 @@ public class GenerateMap {
         ServerLevel serverLevel = level;
         image = resizeBufferedImage(image, 128, 128);
 
-        byte[][] colorMap = new byte[128][128];
-        for (int j = 0; j < colorMap.length; j++) {
-            for (int i = 0; i < colorMap.length; i++) {
-                int rgb = image.getRGB(i, j);
-                colorMap[i][j] = findClosetMapColorByte(rgbIntToRgbArray(rgb));
-            }
-        }
+        byte[][] colorMap = ditherImageToMinecraftMapColors(image);
 
         //TODO fix this process as it burns through 1 map ID and dedicates another to the image, which while not likely a save runs out of 2 billion IDs, it is sloppy
         MapItemSavedData mapData = MapItemSavedData.createFresh(0.0, 0.0, (byte)1, false, false, serverLevel.dimension());
