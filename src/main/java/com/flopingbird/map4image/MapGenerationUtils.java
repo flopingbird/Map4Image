@@ -281,6 +281,8 @@ public class MapGenerationUtils {
                 colorMap[x][y] = (byte) closestColor[0];
                 //TODO change computation surrounding rgb values, objects will be cleaner but idk if they will cause performance shennigans
                 switch(dither) {
+                    case DitherType.NONE:
+                        break;
                     case DitherType.FLOYDSTEINBERG:
                         int[] quantizationError = subRgbValues(rgbIntToRgbArray(rgb), rgbIntToRgbArray(closestColor[1]));
                         //TODO hey maybe 1 thousand if statments isnt a good idea here
@@ -293,37 +295,12 @@ public class MapGenerationUtils {
                         if (x != colorMap.length-1 && y != colorMap.length-1)
                             image.setRGB(x+1, y+1, rgbArrayToRgbInt(clampRgbValue(addRgbValues(rgbIntToRgbArray(image.getRGB(x+1, y+1)), scaleRgbValue(quantizationError, 1.0/16)))));
                         break;
-                    case DitherType.NONE:
-                        break;
+
                 }
 
             }
         }
         return colorMap;
-    }
-
-    public static BufferedImage resizeBufferedImage(BufferedImage image, int w, int h) {
-        BufferedImage newImage = new BufferedImage(w, h, image.getType());
-        int oldH = image.getHeight();
-        int oldW = image.getWidth();
-        double stepSizeX = ((double)oldW)/w;
-        double stepSizeY = ((double)oldH)/h;
-
-        for (int x = 0; x < w; x++) {
-            for (int y = 0; y < h; y++) {
-                //scansize is stepSizeX as it refers to how big the array will be * height, or something else entirely different im not sure, see javadocs for further explanation
-                int[] rgbsRaw = image.getRGB((int)Math.round(x*stepSizeX), (int)Math.round(y*stepSizeY), (int)Math.round(stepSizeX), (int)Math.round(stepSizeY), null, 0, (int) (stepSizeX));
-                int rTotal = 0, gTotal = 0, bTotal = 0;
-                for (int rgb : rgbsRaw) {
-                    rTotal += rgbIntToRgbArray(rgb)[0];
-                    gTotal += rgbIntToRgbArray(rgb)[1];
-                    bTotal += rgbIntToRgbArray(rgb)[2];
-                }
-                int newRgb = rgbArrayToRgbInt(new int[] {rTotal / rgbsRaw.length, gTotal / rgbsRaw.length, bTotal / rgbsRaw.length});
-                newImage.setRGB(x, y, newRgb);
-            }
-        }
-        return newImage;
     }
 
     public enum DitherType{FLOYDSTEINBERG, NONE}

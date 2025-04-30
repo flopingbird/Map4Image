@@ -18,7 +18,10 @@ public class GenerateMap {
     public static ItemStack generateMap(BufferedImage image, ServerLevel level, DitherType ditherType) {
         //TODO keep map IDs in different serverLevel or try to get rid of having to pass it
         ServerLevel serverLevel = level;
-        image = resizeBufferedImage(image, 128, 128);
+        Image rescaledImage = image.getScaledInstance(128, 128, Image.SCALE_REPLICATE);
+        Graphics2D graphics = image.createGraphics();
+        graphics.drawImage(rescaledImage, 0, 0, null);
+        graphics.dispose();
 
         byte[][] colorMap = ditherImageToMinecraftMapColors(image, ditherType);
 
