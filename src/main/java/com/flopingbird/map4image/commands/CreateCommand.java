@@ -40,9 +40,11 @@ public class CreateCommand {
         BufferedImage image = getBufferedImageFromLink(StringArgumentType.getString(command, "link"));
         ItemStack[] maps = generateMapArt(image, player.serverLevel(), dither, IntegerArgumentType.getInteger(command, "width"), IntegerArgumentType.getInteger(command, "height"));
 
-        for (ItemStack map : maps)
-            player.addItem(map);
-
+        //TODO click to add to multiple item frames at once when map size > 1
+        for (ItemStack map : maps) {
+            if (map != null)
+                player.addItem(map);
+        }
         return 1;
     }
 }

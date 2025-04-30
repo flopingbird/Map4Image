@@ -273,14 +273,13 @@ public class MapGenerationUtils {
 
     //Flyod-Steinberg dithering
     public static byte[][] imageToMinecraftMapColors(BufferedImage image, DitherType dither) {
-        System.out.println(image.getHeight());
-        System.out.println(image.getWidth());
-        byte[][] colorMap = new byte[image.getWidth()][image.getHeight()];
+        int height = image.getHeight(), width = image.getWidth();
+        byte[][] colorMap = new byte[height][width];
         for (int y = 0; y < colorMap.length; y++) {
-            for (int x = 0; x < colorMap.length; x++) {
+            for (int x = 0; x < colorMap[0].length; x++) {
                 int rgb = image.getRGB(x, y);
                 int[] closestColor = findClosetMapColorByte(rgbIntToRgbArray(rgb));
-                colorMap[x][y] = (byte) closestColor[0];
+                colorMap[y][x] = (byte) closestColor[0];
                 //TODO change computation surrounding rgb values, objects will be cleaner but idk if they will cause performance shennigans
                 switch(dither) {
                     case DitherType.NONE:
@@ -288,13 +287,13 @@ public class MapGenerationUtils {
                     case DitherType.FLOYDSTEINBERG:
                         int[] quantizationError = subRgbValues(rgbIntToRgbArray(rgb), rgbIntToRgbArray(closestColor[1]));
                         //TODO hey maybe 1 thousand if statments isnt a good idea here
-                        if (x != colorMap.length-1)
+                        if (x != width-1)
                             image.setRGB(x+1, y, rgbArrayToRgbInt(clampRgbValue(addRgbValues(rgbIntToRgbArray(image.getRGB(x+1, y)), scaleRgbValue(quantizationError, 7.0/16)))));
-                        if (x != 0 && y != colorMap.length-1)
+                        if (x != 0 && y != height-1)
                             image.setRGB(x-1, y+1, rgbArrayToRgbInt(clampRgbValue(addRgbValues(rgbIntToRgbArray(image.getRGB(x-1, y+1)), scaleRgbValue(quantizationError, 3.0/16)))));
-                        if (y != colorMap.length-1)
+                        if (y != height-1)
                             image.setRGB(x, y+1, rgbArrayToRgbInt(clampRgbValue(addRgbValues(rgbIntToRgbArray(image.getRGB(x, y+1)), scaleRgbValue(quantizationError, 5.0/16)))));
-                        if (x != colorMap.length-1 && y != colorMap.length-1)
+                        if (x != width-1 && y != height-1)
                             image.setRGB(x+1, y+1, rgbArrayToRgbInt(clampRgbValue(addRgbValues(rgbIntToRgbArray(image.getRGB(x+1, y+1)), scaleRgbValue(quantizationError, 1.0/16)))));
                         break;
 

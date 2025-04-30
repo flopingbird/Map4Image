@@ -27,7 +27,7 @@ public class GenerateMapArt {
 
         byte[][] colorMap = imageToMinecraftMapColors(image, ditherType);
         //TODO processing to fill non 128 divisible map size with clear tiles or something like that
-        ItemStack[] maps = new ItemStack[(colorMap.length / 128) * (colorMap.length / 128)];
+        ItemStack[] maps = new ItemStack[(colorMap[0].length / 128) * (colorMap.length / 128)];
         int mapsIndex = 0;
         for (int y = 0; y < colorMap.length; y+=128)
             for (int x = 0; x < colorMap[0].length; x+=128){
@@ -36,7 +36,7 @@ public class GenerateMapArt {
                 MapItemSavedData mapData = MapItemSavedData.createFresh(0.0, 0.0, (byte)1, false, false, serverLevel.dimension());
                 for (int j = 0; j < 128; j++) {
                     for (int i = 0; i < 128; i++) {
-                        mapData.setColor(i, j, subColorMap[i][j]);
+                        mapData.setColor(i, j, subColorMap[j][i]);
                     }
                 }
 
