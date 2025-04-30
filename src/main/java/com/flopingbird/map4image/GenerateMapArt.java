@@ -1,7 +1,6 @@
 package com.flopingbird.map4image;
 
 import com.flopingbird.map4image.mixin.MapMixin;
-import com.jcraft.jogg.Buffer;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
@@ -13,7 +12,6 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Arrays;
 
 import static com.flopingbird.map4image.MapGenerationUtils.*;
 

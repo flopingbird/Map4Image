@@ -2,28 +2,15 @@ package com.flopingbird.map4image.commands;
 
 import com.flopingbird.map4image.MapGenerationUtils;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.sun.jdi.connect.Connector;
-import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.commands.arguments.ResourceOrTagKeyArgument;
-import net.minecraft.commands.arguments.StringRepresentableArgument;
-import net.minecraft.commands.arguments.item.ItemArgument;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.MapItem;
-
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 
 import static com.flopingbird.map4image.GenerateMapArt.generateMapArt;
 import static com.flopingbird.map4image.GenerateMapArt.getBufferedImageFromLink;
