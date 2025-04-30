@@ -272,8 +272,10 @@ public class MapGenerationUtils {
     }
 
     //Flyod-Steinberg dithering
-    public static byte[][] ditherImageToMinecraftMapColors(BufferedImage image, DitherType dither) {
-        byte[][] colorMap = new byte[128][128];
+    public static byte[][] imageToMinecraftMapColors(BufferedImage image, DitherType dither) {
+        System.out.println(image.getHeight());
+        System.out.println(image.getWidth());
+        byte[][] colorMap = new byte[image.getWidth()][image.getHeight()];
         for (int y = 0; y < colorMap.length; y++) {
             for (int x = 0; x < colorMap.length; x++) {
                 int rgb = image.getRGB(x, y);
