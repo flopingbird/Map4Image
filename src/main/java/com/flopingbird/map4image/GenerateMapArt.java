@@ -65,13 +65,11 @@ public class GenerateMapArt {
                     }
                 }
             }
-
             colorMap = newColorMap;
             colorMapWidth = colorMap[0].length;
         }
 
 
-        //TODO processing to fill non 128 divisible map size with clear tiles or something like that
         ItemStack[] maps = new ItemStack[colorMapWidth * colorMapHeight];
         int mapsIndex = 0;
         for (int y = 0; y < colorMapHeight; y+=128)
