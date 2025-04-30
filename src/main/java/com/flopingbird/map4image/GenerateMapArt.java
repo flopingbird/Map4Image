@@ -26,11 +26,56 @@ public class GenerateMapArt {
         graphics.dispose();
 
         byte[][] colorMap = imageToMinecraftMapColors(image, ditherType);
+        int colorMapHeight = colorMap.length, colorMapWidth = colorMap[0].length;
+        //compensate for missing space vertically by filling rows with transparent tiles
+        if (colorMapHeight % 128 != 0) {
+            //find # to round up to nearest map size
+            int heightDiff = 128 - (colorMapHeight % 128);
+            byte[][] newColorMap = new byte[colorMapHeight + heightDiff][colorMapWidth];
+            byte[] newRow = new byte[colorMapWidth];
+            //change all elements to byte zero, byte zero on the minecraft map color chart is transparent
+            for (int i = 0; i < newRow.length; i++)
+                newRow[i] = 0;
+            int oldMapScanIndex = 0;
+            for (int y = 0; y < newColorMap.length; y++) {
+                if (y < heightDiff/2 || y > heightDiff/2-1+colorMapHeight)
+                    newColorMap[y] = newRow;
+                else {
+                    newColorMap[y] = colorMap[oldMapScanIndex];
+                    oldMapScanIndex++;
+                }
+
+            }
+            colorMap = newColorMap;
+            colorMapHeight = colorMap.length;
+        }
+        //compensate for missing space horizontally by filling columns with transparent tiles
+        if (colorMapWidth % 128 != 0) {
+            //find # to round up to nearest map size
+            int heightDiff = 128 - (colorMapWidth % 128);
+            byte[][] newColorMap = new byte[colorMapHeight][colorMapWidth + heightDiff];
+            for (int y = 0; y < colorMapHeight; y++) {
+                int oldMapScanIndex = 0;
+                for (int x = 0; x < newColorMap[0].length; x++) {
+                    if (x < heightDiff/2 || x > heightDiff/2-1+colorMapWidth)
+                        newColorMap[y][x] = 0;
+                    else {
+                        newColorMap[y][x] = colorMap[y][oldMapScanIndex];
+                        oldMapScanIndex++;
+                    }
+                }
+            }
+
+            colorMap = newColorMap;
+            colorMapWidth = colorMap[0].length;
+        }
+
+
         //TODO processing to fill non 128 divisible map size with clear tiles or something like that
-        ItemStack[] maps = new ItemStack[(colorMap[0].length / 128) * (colorMap.length / 128)];
+        ItemStack[] maps = new ItemStack[colorMapWidth * colorMapHeight];
         int mapsIndex = 0;
-        for (int y = 0; y < colorMap.length; y+=128)
-            for (int x = 0; x < colorMap[0].length; x+=128){
+        for (int y = 0; y < colorMapHeight; y+=128)
+            for (int x = 0; x < colorMapWidth; x+=128){
                 byte[][] subColorMap = copySubrange(colorMap, x, y, 128, 128);
                 //TODO fix this process as it burns through 1 map ID and dedicates another to the image, which while not likely a save runs out of 2 billion IDs, it is sloppy
                 MapItemSavedData mapData = MapItemSavedData.createFresh(0.0, 0.0, (byte)1, false, false, serverLevel.dimension());
