@@ -62,25 +62,13 @@ public class CreateCommand {
             int previewMap = generateMapArt(image, player.serverLevel(), dither, 128, 128)[0][0];
             //preferable to MapItem.create as that will burn through a MapID
             ItemStack previewMapItem = new ItemStack(Items.FILLED_MAP);
-            //here to compare if generated mapIDs equal calculated mapIDs
-            for (int[] mapRow : maps) {
-                for (int map : mapRow) {
-                    System.out.print(map + " ");
-                }
-                System.out.println();
-            }
 
             previewMapItem.set(DataComponents.MAP_ID, new MapId(previewMap));
             previewMapItem.set(ModDataComponentType.WIDTH, maps[0].length);
             previewMapItem.set(ModDataComponentType.HEIGHT, maps.length);
             player.addItem(previewMapItem);
         }
-        /*
-        for (ItemStack[] mapStack : maps)
-                for (ItemStack map : mapStack)
-                    player.addItem(map);
 
-         */
         return 1;
     }
 }
