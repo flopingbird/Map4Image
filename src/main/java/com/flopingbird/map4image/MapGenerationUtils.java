@@ -271,7 +271,7 @@ public class MapGenerationUtils {
         return new int[]{Math.clamp(rgb[0], 0, 255), Math.clamp(rgb[1], 0, 255), Math.clamp(rgb[2], 0, 255)};
     }
 
-    //Flyod-Steinberg dithering
+    //returns colorMap with minecraft color bytes for each color
     public static byte[][] imageToMinecraftMapColors(BufferedImage image, DitherType dither) {
         int height = image.getHeight(), width = image.getWidth();
         byte[][] colorMap = new byte[height][width];
@@ -281,20 +281,38 @@ public class MapGenerationUtils {
                 int[] closestColor = findClosetMapColorByte(rgbIntToRgbArray(rgb));
                 colorMap[y][x] = (byte) closestColor[0];
                 //TODO change computation surrounding rgb values, objects will be cleaner but idk if they will cause performance shennigans
+                int[] quantizationError = subRgbValues(rgbIntToRgbArray(rgb), rgbIntToRgbArray(closestColor[1]));
+                int[][] offsets;
+                int[] scale;
+
                 switch(dither) {
                     case DitherType.NONE:
                         break;
                     case DitherType.FLOYDSTEINBERG:
-                        int[] quantizationError = subRgbValues(rgbIntToRgbArray(rgb), rgbIntToRgbArray(closestColor[1]));
-                        //TODO hey maybe 1 thousand if statments isnt a good idea here
-                        if (x != width-1)
-                            image.setRGB(x+1, y, rgbArrayToRgbInt(clampRgbValue(addRgbValues(rgbIntToRgbArray(image.getRGB(x+1, y)), scaleRgbValue(quantizationError, 7.0/16)))));
-                        if (x != 0 && y != height-1)
-                            image.setRGB(x-1, y+1, rgbArrayToRgbInt(clampRgbValue(addRgbValues(rgbIntToRgbArray(image.getRGB(x-1, y+1)), scaleRgbValue(quantizationError, 3.0/16)))));
-                        if (y != height-1)
-                            image.setRGB(x, y+1, rgbArrayToRgbInt(clampRgbValue(addRgbValues(rgbIntToRgbArray(image.getRGB(x, y+1)), scaleRgbValue(quantizationError, 5.0/16)))));
-                        if (x != width-1 && y != height-1)
-                            image.setRGB(x+1, y+1, rgbArrayToRgbInt(clampRgbValue(addRgbValues(rgbIntToRgbArray(image.getRGB(x+1, y+1)), scaleRgbValue(quantizationError, 1.0/16)))));
+                        offsets = new int[][]{       {1, 0},
+                                            {-1,-1}, {0, -1}, {1, -1}};
+                        scale = new int[]{7,
+                                    3, 5, 1};
+                        for (int i = 0; i < offsets.length; i++) {
+                            //y offset subtracted since the image increases its y value as it goes down, same for the colorMap returned
+                            int targetXValue = x+offsets[i][0], targetYValue = y-offsets[i][1];
+                            if ((targetXValue >= 0 && targetXValue < width) && (targetYValue >= 0 && targetYValue < height))
+                                image.setRGB(targetXValue, targetYValue, rgbArrayToRgbInt(clampRgbValue(addRgbValues(rgbIntToRgbArray(image.getRGB(targetXValue, targetYValue)), scaleRgbValue(quantizationError, scale[i] / 16.0)))));
+                        }
+                        break;
+                    case DitherType.MINIMIZED_AVERAGE_ERROR:
+                        offsets = new int[][]{           {1,0}, {2,0},
+                                {-2,-1}, {-1,-1}, {0,-1}, {1,-1}, {2,-1},
+                                {-2,-2}, {-1,-2}, {0,-2}, {1,-2}, {2,-2}};
+                        scale = new int[]{7, 5,
+                                 3, 5, 7, 5, 3,
+                                 1, 3, 5, 3, 1};
+                        for (int i = 0; i < offsets.length; i++) {
+                            //y offset subtracted since the image increases its y value as it goes down, same for the colorMap returned
+                            int targetXValue = x+offsets[i][0], targetYValue = y-offsets[i][1];
+                            if ((targetXValue >= 0 && targetXValue < width) && (targetYValue >= 0 && targetYValue < height))
+                                image.setRGB(targetXValue, targetYValue, rgbArrayToRgbInt(clampRgbValue(addRgbValues(rgbIntToRgbArray(image.getRGB(targetXValue, targetYValue)), scaleRgbValue(quantizationError, scale[i] / 48.0)))));
+                        }
                         break;
 
                 }
@@ -304,5 +322,5 @@ public class MapGenerationUtils {
         return colorMap;
     }
 
-    public enum DitherType{FLOYDSTEINBERG, NONE}
+    public enum DitherType{FLOYDSTEINBERG, MINIMIZED_AVERAGE_ERROR, NONE}
 }

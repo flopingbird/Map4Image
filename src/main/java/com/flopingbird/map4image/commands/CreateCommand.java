@@ -30,6 +30,11 @@ public class CreateCommand {
                 .then(Commands.literal("create").then(Commands.argument("link", StringArgumentType.string()).then(Commands.literal("none").then(Commands.argument("width", IntegerArgumentType.integer(1, MAX_WIDTH)).then(Commands.argument("height", IntegerArgumentType.integer(1, MAX_HEIGHT)).executes((command) -> {
                     return create(command, MapGenerationUtils.DitherType.NONE);
         })))))));
+        dispatcher.register(
+                Commands.literal("map4image")
+                .then(Commands.literal("create").then(Commands.argument("link", StringArgumentType.string()).then(Commands.literal("minimizedAverageError").then(Commands.argument("width", IntegerArgumentType.integer(1, MAX_WIDTH)).then(Commands.argument("height", IntegerArgumentType.integer(1, MAX_HEIGHT)).executes((command) -> {
+                    return create(command, MapGenerationUtils.DitherType.MINIMIZED_AVERAGE_ERROR);
+        })))))));
 
     }
 
