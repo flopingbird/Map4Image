@@ -1,14 +1,23 @@
 package com.flopingbird.map4image;
 
+import com.flopingbird.map4image.component.ModDataComponentType;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.ItemLore;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
+import org.apache.logging.log4j.core.selector.NamedContextSelector;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 
 import static com.flopingbird.map4image.MapGenerationUtils.*;
 
@@ -86,6 +95,21 @@ public class GenerateMapArt {
         return maps;
     }
 
+    public static ItemStack createPreviewMap(int previewMapID, int width, int height) {
+        ItemStack previewMapItem = new ItemStack(Items.FILLED_MAP);
+
+        previewMapItem.set(DataComponents.MAP_ID, new MapId(previewMapID));
+        previewMapItem.set(ModDataComponentType.WIDTH, height);
+        previewMapItem.set(ModDataComponentType.HEIGHT, width);
+        previewMapItem.set(DataComponents.ITEM_NAME, Component.literal("Map Art"));
+        ArrayList<Component> lore = new ArrayList<>();
+        lore.add(Component.literal("Place map at top left of item frame grid of width " + width + " and height " + height));
+        previewMapItem.set(DataComponents.LORE, new ItemLore(lore));
+        previewMapItem.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
+
+        return previewMapItem;
+    }
+
     //taken directly from https://stackoverflow.com/questions/27343663/how-to-obtain-a-part-of-a-2d-array, removed uncessary checks
     private static byte[][] copySubrange(byte[][] source, int x, int y, int width, int height) {
         byte[][] dest = new byte[height][width];
@@ -103,6 +127,8 @@ public class GenerateMapArt {
             throw new RuntimeException(e);
         }
     }
+
+
 
 
 }

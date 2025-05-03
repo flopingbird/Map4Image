@@ -17,8 +17,7 @@ import net.minecraft.world.level.saveddata.maps.MapId;
 
 import java.awt.image.BufferedImage;
 
-import static com.flopingbird.map4image.GenerateMapArt.generateMapArt;
-import static com.flopingbird.map4image.GenerateMapArt.getBufferedImageFromLink;
+import static com.flopingbird.map4image.GenerateMapArt.*;
 
 public class CreateCommand {
     public final static int MAX_WIDTH = 128*10;
@@ -50,8 +49,6 @@ public class CreateCommand {
         BufferedImage image = getBufferedImageFromLink(StringArgumentType.getString(command, "link"));
         int[][] maps = generateMapArt(image, player.serverLevel(), dither, IntegerArgumentType.getInteger(command, "width"), IntegerArgumentType.getInteger(command, "height"));
 
-        //TODO click to add to multiple item frames at once when map size > 1
-
         if (maps.length == 1 && maps[0].length == 1) {
             //preferable to MapItem.create as that will burn through a MapID
             ItemStack mapItem = new ItemStack(Items.FILLED_MAP);
@@ -60,13 +57,7 @@ public class CreateCommand {
         }
         else {
             int previewMap = generateMapArt(image, player.serverLevel(), dither, 128, 128)[0][0];
-            //preferable to MapItem.create as that will burn through a MapID
-            ItemStack previewMapItem = new ItemStack(Items.FILLED_MAP);
-
-            previewMapItem.set(DataComponents.MAP_ID, new MapId(previewMap));
-            previewMapItem.set(ModDataComponentType.WIDTH, maps[0].length);
-            previewMapItem.set(ModDataComponentType.HEIGHT, maps.length);
-            player.addItem(previewMapItem);
+            player.addItem(createPreviewMap(previewMap, maps[0].length, maps.length));
         }
 
         return 1;
