@@ -17,7 +17,10 @@ public class HelpCommand {
     }
 
     private int help(CommandSourceStack source) throws CommandSyntaxException {
-        source.sendSystemMessage(Component.literal("friend!"));
+        source.sendSystemMessage(Component.literal("Currently the only command (beside this one), is the create command.\n" +
+                "/map4image create <link> <dithertype> <width> <height>\n" +
+                "Keep in mind a map is 128 pixels in length. The recommended dither type is floydsteinberg\n" +
+                "For more information you can visit the modrinth page here: https://www.modrinth.com/mod/map4image"));
         return 1;
     }
 
