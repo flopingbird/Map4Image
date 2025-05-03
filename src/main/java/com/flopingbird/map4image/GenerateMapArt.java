@@ -99,8 +99,8 @@ public class GenerateMapArt {
         ItemStack previewMapItem = new ItemStack(Items.FILLED_MAP);
 
         previewMapItem.set(DataComponents.MAP_ID, new MapId(previewMapID));
-        previewMapItem.set(ModDataComponentType.WIDTH, height);
-        previewMapItem.set(ModDataComponentType.HEIGHT, width);
+        previewMapItem.set(ModDataComponentType.WIDTH, width);
+        previewMapItem.set(ModDataComponentType.HEIGHT, height);
         previewMapItem.set(DataComponents.ITEM_NAME, Component.literal("Map Art"));
         ArrayList<Component> lore = new ArrayList<>();
         lore.add(Component.literal("Place map at top left of item frame grid of width " + width + " and height " + height));
