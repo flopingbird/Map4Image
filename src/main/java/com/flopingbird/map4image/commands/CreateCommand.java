@@ -20,8 +20,8 @@ import java.awt.image.BufferedImage;
 import static com.flopingbird.map4image.GenerateMapArt.*;
 
 public class CreateCommand {
-    public final static int MAX_WIDTH = 128*10;
-    public final static int MAX_HEIGHT = 128*10;
+    public final static int MAX_WIDTH = 128*32;
+    public final static int MAX_HEIGHT = 128*32;
 
     public CreateCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(
