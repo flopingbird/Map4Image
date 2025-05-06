@@ -2,6 +2,7 @@ package com.flopingbird.map4image;
 
 import com.flopingbird.map4image.commands.*;
 import com.flopingbird.map4image.component.ModDataComponentType;
+import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.server.command.ConfigCommand;
 import org.slf4j.Logger;
@@ -31,6 +32,8 @@ public class Map4Image
         // Note that this is necessary if and only if we want *this* class (Map4Image) to respond directly to events.
         // Do not add this line if there are no @SubscribeEvent-annotated functions in this class, like onServerStarting() below.
         NeoForge.EVENT_BUS.register(Map4Image.class);
+
+        modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
 
 
         ModDataComponentType.register(modEventBus);

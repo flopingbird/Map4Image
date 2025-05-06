@@ -1,5 +1,6 @@
 package com.flopingbird.map4image.commands;
 
+import com.flopingbird.map4image.Config;
 import com.flopingbird.map4image.MapGenerationUtils;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
@@ -11,8 +12,8 @@ import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 
 public class CreateCommand {
-    public final static int MAX_WIDTH = 128*32;
-    public final static int MAX_HEIGHT = 128*32;
+    public final static int MAX_WIDTH = 128*Config.maxWidth;
+    public final static int MAX_HEIGHT = 128* Config.maxHeight;
 
     public CreateCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(
