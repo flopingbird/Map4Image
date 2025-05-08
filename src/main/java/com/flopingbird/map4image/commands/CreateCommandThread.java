@@ -1,10 +1,9 @@
 package com.flopingbird.map4image.commands;
 
-import com.flopingbird.map4image.MapGenerationUtils;
+import com.flopingbird.map4image.utils.MapGenerationUtils;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;

@@ -1,4 +1,4 @@
-package com.flopingbird.map4image;
+package com.flopingbird.map4image.utils;
 
 import java.awt.image.BufferedImage;
 

@@ -1,7 +1,7 @@
 package com.flopingbird.map4image.commands;
 
 import com.flopingbird.map4image.Config;
-import com.flopingbird.map4image.MapGenerationUtils;
+import com.flopingbird.map4image.utils.MapGenerationUtils;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
