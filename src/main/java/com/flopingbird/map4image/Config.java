@@ -26,11 +26,6 @@ public class Config
     public static int maxWidth;
     public static int maxHeight;
 
-    private static boolean validateItemName(final Object obj)
-    {
-        return obj instanceof String itemName && BuiltInRegistries.ITEM.containsKey(ResourceLocation.parse(itemName));
-    }
-
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event)
     {
