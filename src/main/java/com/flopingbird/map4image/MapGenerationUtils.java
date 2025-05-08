@@ -240,7 +240,8 @@ public class MapGenerationUtils {
         return distanceBetweenRgbValues(rgbIntToRgbArray(rgb1), rgbIntToRgbArray(rgb2));
     }
     public static int distanceBetweenRgbValues(int[] rgb1, int[] rgb2) {
-        return Math.abs(rgb1[0]-rgb2[0]) + Math.abs(rgb1[1]-rgb2[1]) + Math.abs(rgb1[2]-rgb2[2]);
+        //TODO this is taking up bulk of processing time since something something nerd shit O(n) maybe i should go look at other ways people have done this
+        return (int) (Math.pow(rgb1[0]-rgb2[0], 2) + Math.pow(rgb1[1]-rgb2[1], 2) + Math.pow(rgb1[2]-rgb2[2], 2));
     }
 
     public static int addRgbValues(int rgb1, int rgb2) {
