@@ -47,7 +47,7 @@ public abstract class ItemFrameMixin {
         //surely theres a less silly way to getPos without casting shennigans right
         ItemFrame interactedItemFrame = (ItemFrame) (Object) this;
         BlockPos topLeftItemFramePosition = interactedItemFrame.getPos();
-        Vec3i direction = interactedItemFrame.getDirection().getUnitVec3i();
+        Vec3i direction = interactedItemFrame.getDirection().getNormal();
         //TODO add ability to place on floor
         Vec3i widthDirection = new Vec3i(direction.getZ(), 0, -direction.getX());
         Vec3i heightDirection = new Vec3i(0, -1, 0);
@@ -64,7 +64,7 @@ public abstract class ItemFrameMixin {
                 List<ItemFrame> itemFramesAtBlock = interactedItemFrame.level().getEntitiesOfClass(ItemFrame.class, new AABB(currentItemFrameBlockPos));
                 if (itemFramesAtBlock.isEmpty()) {failed = true; break blockCheck;}
                 for (ItemFrame itemFrame : itemFramesAtBlock)
-                    if (itemFrame.getDirection().getUnitVec3i().equals(direction) && itemFrame.getItem().is(Items.AIR)) { itemFrames[y][x] = itemFrame; break; }
+                    if (itemFrame.getDirection().getNormal().equals(direction) && itemFrame.getItem().is(Items.AIR)) { itemFrames[y][x] = itemFrame; break; }
                 if (itemFrames[y][x] == null) {failed = true; break blockCheck;}
             }
         }
@@ -92,12 +92,12 @@ public abstract class ItemFrameMixin {
     }
 
     //ok... this one......... i failed my calc test so i mightve been a little out of it
-    @Inject(method = "dropItem(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/Entity;Z)V", at = @At("HEAD"))
-    private void itemFrameFilledRemover(ServerLevel level, Entity entity, boolean dropItem, CallbackInfo ci) {
+    @Inject(method = "dropItem(Lnet/minecraft/world/entity/Entity;Z)V", at = @At("HEAD"))
+    private void itemFrameFilledRemover(Entity entity, boolean dropSelf, CallbackInfo ci) {
         ItemFrame interactedItemFrame = (ItemFrame) (Object) this;
         if (interactedItemFrame.getItem().get(ModDataComponentType.PLACED_PARENT) == null) return;
         BlockPos blockPosOfParent = interactedItemFrame.getItem().get(ModDataComponentType.PLACED_PARENT);
-        Vec3i direction = interactedItemFrame.getDirection().getUnitVec3i();
+        Vec3i direction = interactedItemFrame.getDirection().getNormal();
         Vec3i widthDirection = new Vec3i(direction.getZ(), 0, -direction.getX());
         Vec3i heightDirection = new Vec3i(0, -1, 0);
 
@@ -105,7 +105,7 @@ public abstract class ItemFrameMixin {
         if (itemFramesAtParentBlocks.isEmpty()) return;
         ItemFrame parentItemFrame = null;
         for (ItemFrame itemFrame : itemFramesAtParentBlocks)
-                if (itemFrame.getDirection().getUnitVec3i().equals(direction)) { parentItemFrame = itemFrame; break; }
+                if (itemFrame.getDirection().getNormal().equals(direction)) { parentItemFrame = itemFrame; break; }
         if (parentItemFrame == null || parentItemFrame.getItem().get(ModDataComponentType.WIDTH) == null) return;
         int width = parentItemFrame.getItem().get(ModDataComponentType.WIDTH), height = parentItemFrame.getItem().get(ModDataComponentType.HEIGHT);
         ItemFrame[][] itemFrames = new ItemFrame[height][width];
@@ -115,7 +115,7 @@ public abstract class ItemFrameMixin {
                 List<ItemFrame> itemFramesAtBlock = interactedItemFrame.level().getEntitiesOfClass(ItemFrame.class, new AABB(currentItemFrameBlockPos));
                 if (itemFramesAtBlock.isEmpty()) {return;}
                 for (ItemFrame itemFrame : itemFramesAtBlock)
-                    if (itemFrame.getDirection().getUnitVec3i().equals(direction) && itemFrame.getItem().get(ModDataComponentType.PLACED_PARENT) != null) { itemFrames[y][x] = itemFrame; break; }
+                    if (itemFrame.getDirection().getNormal().equals(direction) && itemFrame.getItem().get(ModDataComponentType.PLACED_PARENT) != null) { itemFrames[y][x] = itemFrame; break; }
                 if (itemFrames[y][x] == null) {return;}
             }
         }
@@ -126,6 +126,6 @@ public abstract class ItemFrameMixin {
             for (ItemFrame itemFrame : itemFrameRow)
                 itemFrame.setItem(ItemStack.EMPTY);
 
-        interactedItemFrame.spawnAtLocation(level, itemDropped);
+        interactedItemFrame.spawnAtLocation(itemDropped);
     }
 }
