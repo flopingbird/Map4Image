@@ -7,10 +7,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.ItemLore;
-import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
-import org.apache.logging.log4j.core.selector.NamedContextSelector;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -19,7 +17,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 
-import static com.flopingbird.map4image.MapGenerationUtils.*;
+import static com.flopingbird.map4image.utils.MapGenerationUtils.*;
 
 public class GenerateMapArt {
     //returns 2d array of mapIds in [y][x] format, first element of first array is the top left.
