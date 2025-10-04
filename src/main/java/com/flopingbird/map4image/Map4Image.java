@@ -39,6 +39,7 @@ public class Map4Image
     public static void onCommandsRegister(RegisterCommandsEvent event) {
         new HelpCommand(event.getDispatcher());
         new CreateCommand(event.getDispatcher());
+        new DithersCommand(event.getDispatcher());
 
         ConfigCommand.register(event.getDispatcher());
     }

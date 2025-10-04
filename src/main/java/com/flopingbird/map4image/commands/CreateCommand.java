@@ -13,7 +13,7 @@ import net.minecraft.network.chat.Component;
 
 public class CreateCommand {
     public final static int MAX_WIDTH = 128*Config.maxWidth;
-    public final static int MAX_HEIGHT = 128* Config.maxHeight;
+    public final static int MAX_HEIGHT = 128*Config.maxHeight;
 
     public CreateCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(
