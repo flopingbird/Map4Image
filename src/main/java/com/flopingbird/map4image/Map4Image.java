@@ -1,7 +1,6 @@
 package com.flopingbird.map4image;
 
 import com.flopingbird.map4image.commands.*;
-import com.flopingbird.map4image.component.ModDataComponentType;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.server.command.ConfigCommand;
@@ -34,11 +33,6 @@ public class Map4Image
         NeoForge.EVENT_BUS.register(Map4Image.class);
 
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
-
-
-        ModDataComponentType.register(modEventBus);
-        // Register our mod's ModConfigSpec so that FML can create and load the config file for us
-        //modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
     }
 
     @SubscribeEvent

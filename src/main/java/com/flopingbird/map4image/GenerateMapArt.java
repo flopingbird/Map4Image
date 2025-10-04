@@ -1,11 +1,12 @@
 package com.flopingbird.map4image;
 
-import com.flopingbird.map4image.component.ModDataComponentType;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
@@ -97,8 +98,10 @@ public class GenerateMapArt {
         ItemStack previewMapItem = new ItemStack(Items.FILLED_MAP);
 
         previewMapItem.set(DataComponents.MAP_ID, new MapId(previewMapID));
-        previewMapItem.set(ModDataComponentType.WIDTH, width);
-        previewMapItem.set(ModDataComponentType.HEIGHT, height);
+        CompoundTag customDataTag = new CompoundTag();
+        customDataTag.putInt("width", width);
+        customDataTag.putInt("height", height);
+        previewMapItem.set(DataComponents.CUSTOM_DATA, CustomData.of(customDataTag));
         previewMapItem.set(DataComponents.ITEM_NAME, Component.literal("Map Art"));
         ArrayList<Component> lore = new ArrayList<>();
         lore.add(Component.literal("Place map at top left of item frame grid of width " + width + " and height " + height));
