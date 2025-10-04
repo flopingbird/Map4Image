@@ -10,7 +10,7 @@
 # How to use
 ### Create Command
 ```
-/map4image create <link> <dithertype> <width> <height>
+/map4image create '<link>' <dithertype> <width> <height>
 ```
 The link must be a direct image link (as in a link ending with a image extension such as .png), **keep in mind this link has to be surrounded with quotation marks aswell**. For the dither type I would reccomend using **floydsteinberg** as it tends to have the most consistent results for quality, however if an image does not look good at first I would reccomend experimenting. Width and height are both in pixels, a minecraft map is only able to hold 128x128 pixels so going above these values will generate a "super map".
 #### Super Map
