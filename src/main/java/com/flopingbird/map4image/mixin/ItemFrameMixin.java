@@ -93,6 +93,7 @@ public abstract class ItemFrameMixin {
                     mapItem.set(DataComponents.CUSTOM_DATA, CustomData.of(sizeTag));
                 }
                 itemFrames[y][x].setItem(mapItem, false);
+                itemFrames[y][x].setRotation(0);
             }
         cir.setReturnValue(InteractionResult.SUCCESS);
         item.consume(1, player);
