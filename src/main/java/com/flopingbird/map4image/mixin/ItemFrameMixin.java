@@ -16,6 +16,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -25,8 +26,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.List;
 
 import static com.flopingbird.map4image.GenerateMapArt.createPreviewMap;
-import static com.flopingbird.map4image.utils.tagUtils.blockPosToTag;
-import static com.flopingbird.map4image.utils.tagUtils.tagToBlockPos;
+import static com.flopingbird.map4image.utils.TagUtils.*;
 
 @Mixin(ItemFrame.class)
 public abstract class ItemFrameMixin {
@@ -51,9 +51,22 @@ public abstract class ItemFrameMixin {
         ItemFrame interactedItemFrame = (ItemFrame) (Object) this;
         BlockPos topLeftItemFramePosition = interactedItemFrame.getPos();
         Vec3i direction = interactedItemFrame.getDirection().getUnitVec3i();
-        //TODO add ability to place on floor
-        Vec3i widthDirection = new Vec3i(direction.getZ(), 0, -direction.getX());
-        Vec3i heightDirection = new Vec3i(0, -1, 0);
+
+        int yDirec = direction.getY();
+        Vec3i widthDirection, heightDirection;
+        if (yDirec != 0) { // on da floor or ceiling
+            //player is assumed to be facing top left item frame standing where bottom of image is suppose to reside
+            Vec3 playerPos = player.position();
+            System.out.println(playerPos);
+            Vec3 itemFrameToPlayerXZPlane = new Vec3(playerPos.x-topLeftItemFramePosition.getX(), 0, playerPos.z-topLeftItemFramePosition.getZ());
+            if (Math.abs(itemFrameToPlayerXZPlane.x) > Math.abs(itemFrameToPlayerXZPlane.z)) heightDirection = new Vec3i((int)(itemFrameToPlayerXZPlane.x/Math.abs(itemFrameToPlayerXZPlane.x)), 0, 0);
+            else heightDirection = new Vec3i(0, 0, (int)(itemFrameToPlayerXZPlane.z/Math.abs(itemFrameToPlayerXZPlane.z)));
+            heightDirection = heightDirection.multiply(yDirec);
+            widthDirection = new Vec3i(heightDirection.getZ(), 0, -heightDirection.getX()).multiply(yDirec);
+        } else {
+            widthDirection = new Vec3i(direction.getZ(), 0, -direction.getX());
+            heightDirection = new Vec3i(0, -1, 0);
+        }
         ItemFrame[][] itemFrames = new ItemFrame[height][width];
 
 
@@ -90,10 +103,23 @@ public abstract class ItemFrameMixin {
                     CompoundTag sizeTag = mapItem.get(DataComponents.CUSTOM_DATA).copyTag();
                     sizeTag.putInt("width", width);
                     sizeTag.putInt("height", height);
+                    if (yDirec != 0) {
+                        sizeTag.put("heightDirection", directionToTag(heightDirection));
+                        sizeTag.put("widthDirection", directionToTag(widthDirection));
+                    }
                     mapItem.set(DataComponents.CUSTOM_DATA, CustomData.of(sizeTag));
                 }
                 itemFrames[y][x].setItem(mapItem, false);
-                itemFrames[y][x].setRotation(0);
+                //rotation if statement logic hell
+                int additionalRotation = 0;
+                if (yDirec == -1 && widthDirection.getZ() == 0) additionalRotation = 2;
+                if (heightDirection.getY() == -1 || heightDirection.getZ() == 1) {
+                    itemFrames[y][x].setRotation(0+additionalRotation);
+                } else if (heightDirection.getZ() == 0) {
+                    if (heightDirection.getX() == 1) {
+                        itemFrames[y][x].setRotation(3+additionalRotation);
+                    } else itemFrames[y][x].setRotation(1+additionalRotation);
+                } else itemFrames[x][y].setRotation(2+additionalRotation);
             }
         cir.setReturnValue(InteractionResult.SUCCESS);
         item.consume(1, player);
@@ -106,23 +132,29 @@ public abstract class ItemFrameMixin {
         if (interactedItemFrame.getItem().get(DataComponents.CUSTOM_DATA) == null || !interactedItemFrame.getItem().get(DataComponents.CUSTOM_DATA).contains("parentMapPos")) return;
         BlockPos blockPosOfParent = tagToBlockPos(interactedItemFrame.getItem().get(DataComponents.CUSTOM_DATA).copyTag().getCompound("parentMapPos").get());
         Vec3i direction = interactedItemFrame.getDirection().getUnitVec3i();
-        Vec3i widthDirection = new Vec3i(direction.getZ(), 0, -direction.getX());
-        Vec3i heightDirection = new Vec3i(0, -1, 0);
         List<ItemFrame> itemFramesAtParentBlocks = interactedItemFrame.level().getEntitiesOfClass(ItemFrame.class, new AABB(blockPosOfParent));
         if (itemFramesAtParentBlocks.isEmpty()) return;
         ItemFrame parentItemFrame = null;
         for (ItemFrame itemFrame : itemFramesAtParentBlocks) //i love that these are entities and not block entities :steam_happy:
                 if (itemFrame.getDirection().getUnitVec3i().equals(direction)) { parentItemFrame = itemFrame; break; }
-        if (parentItemFrame == null || !parentItemFrame.getItem().get(DataComponents.CUSTOM_DATA).copyTag().contains("width")) return;
+        if (parentItemFrame == null || parentItemFrame.getItem().get(DataComponents.CUSTOM_DATA) ==null || !parentItemFrame.getItem().get(DataComponents.CUSTOM_DATA).copyTag().contains("width")) return;
         int width = parentItemFrame.getItem().get(DataComponents.CUSTOM_DATA).copyTag().getInt("width").get(), height = parentItemFrame.getItem().get(DataComponents.CUSTOM_DATA).copyTag().getInt("height").get();
         ItemFrame[][] itemFrames = new ItemFrame[height][width];
+        Vec3i widthDirection, heightDirection;
+        if (direction.getY() == 0) {
+            widthDirection = new Vec3i(direction.getZ(), 0, -direction.getX());
+            heightDirection = new Vec3i(0, -1, 0);
+        } else {
+            widthDirection = tagToDirection(parentItemFrame.getItem().get(DataComponents.CUSTOM_DATA).copyTag().getCompound("widthDirection").get());
+            heightDirection = tagToDirection(parentItemFrame.getItem().get(DataComponents.CUSTOM_DATA).copyTag().getCompound("heightDirection").get());
+        }
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 BlockPos currentItemFrameBlockPos = blockPosOfParent.offset(widthDirection.multiply(x).offset(heightDirection.multiply(y)));
                 List<ItemFrame> itemFramesAtBlock = interactedItemFrame.level().getEntitiesOfClass(ItemFrame.class, new AABB(currentItemFrameBlockPos));
                 if (itemFramesAtBlock.isEmpty()) {return;}
                 for (ItemFrame itemFrame : itemFramesAtBlock)
-                    if (itemFrame.getDirection().getUnitVec3i().equals(direction) && interactedItemFrame.getItem().get(DataComponents.CUSTOM_DATA).contains("parentMapPos")) { itemFrames[y][x] = itemFrame; break; }
+                    if (itemFrame.getDirection().getUnitVec3i().equals(direction) && itemFrame.getItem().get(DataComponents.CUSTOM_DATA) != null && itemFrame.getItem().get(DataComponents.CUSTOM_DATA).contains("parentMapPos")) { itemFrames[y][x] = itemFrame; break; }
                 if (itemFrames[y][x] == null) {return;}
             }
         }
