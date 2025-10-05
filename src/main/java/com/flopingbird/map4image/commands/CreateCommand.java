@@ -36,9 +36,13 @@ public class CreateCommand {
 
     private int create(CommandContext<CommandSourceStack> command, MapGenerationUtils.DitherType dither) throws CommandSyntaxException {
         if (command.getSource().getPlayer() == null) return 0;
-        CreateCommandThread createCommandThread = new CreateCommandThread(command, dither);
-        createCommandThread.start();
-        command.getSource().sendSystemMessage(Component.literal("Generating map art..."));
+        try {
+            CreateCommandThread createCommandThread = new CreateCommandThread(command, dither);
+            createCommandThread.start();
+            command.getSource().sendSystemMessage(Component.literal("Generating map art..."));
+        } catch (Exception e) {
+            System.out.println("Map4Image ran into error when creating map: " + e);
+        }
         //create new thread
         return 1;
     }
