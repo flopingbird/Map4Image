@@ -57,7 +57,6 @@ public abstract class ItemFrameMixin {
         if (yDirec != 0) { // on da floor or ceiling
             //player is assumed to be facing top left item frame standing where bottom of image is suppose to reside
             Vec3 playerPos = player.position();
-            System.out.println(playerPos);
             Vec3 itemFrameToPlayerXZPlane = new Vec3(playerPos.x-topLeftItemFramePosition.getX(), 0, playerPos.z-topLeftItemFramePosition.getZ());
             if (Math.abs(itemFrameToPlayerXZPlane.x) > Math.abs(itemFrameToPlayerXZPlane.z)) heightDirection = new Vec3i((int)(itemFrameToPlayerXZPlane.x/Math.abs(itemFrameToPlayerXZPlane.x)), 0, 0);
             else heightDirection = new Vec3i(0, 0, (int)(itemFrameToPlayerXZPlane.z/Math.abs(itemFrameToPlayerXZPlane.z)));
