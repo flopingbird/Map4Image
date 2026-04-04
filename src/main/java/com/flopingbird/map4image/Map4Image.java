@@ -42,6 +42,7 @@ public class Map4Image
         new DithersCommand(event.getDispatcher());
 
         ConfigCommand.register(event.getDispatcher());
+        LOGGER.info("Created commands for Map4Image");
     }
 
 

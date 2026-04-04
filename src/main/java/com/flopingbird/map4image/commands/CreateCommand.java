@@ -41,6 +41,7 @@ public class CreateCommand {
             createCommandThread.start();
             command.getSource().sendSystemMessage(Component.literal("Generating map art..."));
         } catch (Exception e) {
+            command.getSource().sendSystemMessage(Component.literal("Something went wrong while getting your image - see server log for more details"));
             System.out.println("Map4Image ran into error when creating map: " + e);
         }
         //create new thread

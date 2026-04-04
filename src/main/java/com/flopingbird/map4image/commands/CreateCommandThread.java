@@ -13,6 +13,8 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.saveddata.maps.MapId;
 
 import java.awt.image.BufferedImage;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 import static com.flopingbird.map4image.GenerateMapArt.*;
 
@@ -29,8 +31,13 @@ public class CreateCommandThread extends Thread {
 
         CommandSourceStack source = command.getSource();
         ServerPlayer player = source.getPlayer();
-        BufferedImage image = getBufferedImageFromLink(StringArgumentType.getString(command, "link"));
-
+        BufferedImage image;
+        try {
+            image = getBufferedImageFromLink(StringArgumentType.getString(command, "link"));
+        } catch (RuntimeException e) {
+            command.getSource().sendSystemMessage(Component.literal("The image could not be found, is the URL correct?"));
+            throw new RuntimeException(e);
+        }
 
         int[][] maps = generateMapArt(image, player.serverLevel(), dither, IntegerArgumentType.getInteger(command, "width"), IntegerArgumentType.getInteger(command, "height"));
 
