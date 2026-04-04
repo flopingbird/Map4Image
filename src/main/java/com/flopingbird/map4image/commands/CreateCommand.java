@@ -13,7 +13,7 @@ import net.minecraft.network.chat.Component;
 
 public class CreateCommand {
     public final static int MAX_WIDTH = 128*Config.maxWidth;
-    public final static int MAX_HEIGHT = 128* Config.maxHeight;
+    public final static int MAX_HEIGHT = 128*Config.maxHeight;
 
     public CreateCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(
@@ -36,9 +36,14 @@ public class CreateCommand {
 
     private int create(CommandContext<CommandSourceStack> command, MapGenerationUtils.DitherType dither) throws CommandSyntaxException {
         if (command.getSource().getPlayer() == null) return 0;
-        CreateCommandThread createCommandThread = new CreateCommandThread(command, dither);
-        createCommandThread.start();
-        command.getSource().sendSystemMessage(Component.literal("Generating map art..."));
+        try {
+            CreateCommandThread createCommandThread = new CreateCommandThread(command, dither);
+            createCommandThread.start();
+            command.getSource().sendSystemMessage(Component.literal("Generating map art..."));
+        } catch (Exception e) {
+        	command.getSource().sendSystemMessage(Component.literal("Something went wrong while getting your image - see server log for more details"));
+            System.out.println("Map4Image ran into error when creating map: " + e);
+        }
         //create new thread
         return 1;
     }
