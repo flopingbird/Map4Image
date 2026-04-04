@@ -1,11 +1,12 @@
 package com.flopingbird.map4image;
 
-import com.flopingbird.map4image.component.ModDataComponentType;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
@@ -14,7 +15,8 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 
 import static com.flopingbird.map4image.utils.MapGenerationUtils.*;
@@ -97,8 +99,10 @@ public class GenerateMapArt {
         ItemStack previewMapItem = new ItemStack(Items.FILLED_MAP);
 
         previewMapItem.set(DataComponents.MAP_ID, new MapId(previewMapID));
-        previewMapItem.set(ModDataComponentType.WIDTH, width);
-        previewMapItem.set(ModDataComponentType.HEIGHT, height);
+        CompoundTag customDataTag = new CompoundTag();
+        customDataTag.putInt("width", width);
+        customDataTag.putInt("height", height);
+        previewMapItem.set(DataComponents.CUSTOM_DATA, CustomData.of(customDataTag));
         previewMapItem.set(DataComponents.ITEM_NAME, Component.literal("Map Art"));
         ArrayList<Component> lore = new ArrayList<>();
         lore.add(Component.literal("Place map at top left of item frame grid of width " + width + " and height " + height));
@@ -118,12 +122,8 @@ public class GenerateMapArt {
         return dest;
     }
 
-    public static BufferedImage getBufferedImageFromLink(String link) {
-        try {
-            return ImageIO.read(new URL(link).openStream());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    public static BufferedImage getBufferedImageFromLink(String link) throws IOException, URISyntaxException {
+        return ImageIO.read(new URI(link).toURL().openStream());
     }
 
 
