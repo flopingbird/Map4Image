@@ -1,6 +1,7 @@
 package com.flopingbird.map4image;
 
 import com.flopingbird.map4image.commands.*;
+import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.server.command.ConfigCommand;
@@ -8,7 +9,6 @@ import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
 
-import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
@@ -25,7 +25,7 @@ public class Map4Image
 
     // The constructor for the mod class is the first code that is run when your mod is loaded.
     // FML will recognize some parameter types like IEventBus or ModContainer and pass them in automatically.
-    public Map4Image(IEventBus modEventBus, ModContainer modContainer)
+    public Map4Image(IEventBus eventBus, ModContainer modContainer)
     {
         // Register ourselves for server and other game events we are interested in.
         // Note that this is necessary if and only if we want *this* class (Map4Image) to respond directly to events.

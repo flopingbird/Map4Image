@@ -32,7 +32,7 @@ import static com.flopingbird.map4image.utils.TagUtils.*;
 public abstract class ItemFrameMixin {
 
     @Inject(method = "interact", at = @At("HEAD"), cancellable = true)
-    private void itemFrameFiller(Player player, InteractionHand hand, CallbackInfoReturnable<InteractionResult> cir) {
+    private void itemFrameFiller(Player player, InteractionHand hand, Vec3 location, CallbackInfoReturnable<InteractionResult> cir) {
         ItemStack item = player.getItemInHand(hand);
 
         if (item.getItem() != Items.FILLED_MAP || item.get(DataComponents.CUSTOM_DATA) == null || !item.get(DataComponents.CUSTOM_DATA).contains("height")) return;
@@ -85,7 +85,12 @@ public abstract class ItemFrameMixin {
         }
 
         if (failed) {
-            player.displayClientMessage(Component.literal("The map you are currently trying to place does not have valid placement. (" + width + "x" + height + ")"), true);
+            player.sendSystemMessage(
+                    Component.literal(
+                            "The map you are currently trying to place does not have valid placement. ("
+                                    + width + "x" + height + ")"
+                    )
+            );
             cir.setReturnValue(InteractionResult.FAIL);
             return;
         }
@@ -126,7 +131,7 @@ public abstract class ItemFrameMixin {
 
     //ok... this one......... i failed my calc test so i mightve been a little out of it
     @Inject(method = "dropItem(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/Entity;Z)V", at = @At("HEAD"))
-    private void itemFrameFilledRemover(ServerLevel level, Entity entity, boolean dropItem, CallbackInfo ci) {
+    private void itemFrameFilledRemover(ServerLevel level, Entity causedBy, boolean withFrame, CallbackInfo ci) {
         ItemFrame interactedItemFrame = (ItemFrame) (Object) this;
         if (interactedItemFrame.getItem().get(DataComponents.CUSTOM_DATA) == null || !interactedItemFrame.getItem().get(DataComponents.CUSTOM_DATA).contains("parentMapPos")) return;
         BlockPos blockPosOfParent = tagToBlockPos(interactedItemFrame.getItem().get(DataComponents.CUSTOM_DATA).copyTag().getCompound("parentMapPos").get());
