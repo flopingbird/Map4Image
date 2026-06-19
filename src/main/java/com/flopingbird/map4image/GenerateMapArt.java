@@ -22,9 +22,11 @@ import static com.flopingbird.map4image.utils.MapGenerationUtils.*;
 
 public class GenerateMapArt {
     //returns 2d array of mapIds in [y][x] format, first element of first array is the top left.
-    public static int[][] generateMapArt(BufferedImage image, ServerLevel serverLevel, DitherType ditherType, int width, int height) {
+    public static int[][] generateMapArt(BufferedImage image, ServerLevel serverLevel, DitherType ditherType, FlipType flipType, int width, int height) {
+        image = flipImage(image, flipType);
+
         //TODO keep map IDs in different serverLevel or try to get rid of having to pass it
-        Image rescaledImage = image.getScaledInstance(width, height, Image.SCALE_REPLICATE);
+        Image rescaledImage = image.getScaledInstance(width, height, Image.SCALE_SMOOTH);
         image = new BufferedImage(width, height, image.getType());
         Graphics2D graphics = image.createGraphics();
         graphics.drawImage(rescaledImage, 0, 0, null);
@@ -130,7 +132,37 @@ public class GenerateMapArt {
         }
     }
 
+    public static BufferedImage flipImage(BufferedImage image, FlipType flipType) {
+        if (flipType == FlipType.NONE) {
+            return image;
+        }
 
+        int width = image.getWidth();
+        int height = image.getHeight();
 
+        BufferedImage flippedImage = new BufferedImage(width, height, image.getType());
+        Graphics2D g = flippedImage.createGraphics();
+        if (flipType == FlipType.HORIZONTAL) {
+            g.drawImage(image,
+                    width, 0, 0, height,
+                    0, 0, width, height,
+                    null);
 
+        } else if (flipType == FlipType.VERTICAL) {
+            g.drawImage(image,
+                    0, height, width, 0,
+                    0, 0, width, height,
+                    null);
+
+        } else if (flipType == FlipType.BOTH) {
+            g.drawImage(image,
+                    width, height, 0, 0,
+                    0, 0, width, height,
+                    null);
+        }
+
+        g.dispose();
+
+        return flippedImage;
+    }
 }

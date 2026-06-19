@@ -18,6 +18,7 @@ import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -29,13 +30,21 @@ import static com.flopingbird.map4image.GenerateMapArt.createPreviewMap;
 import static com.flopingbird.map4image.utils.TagUtils.*;
 
 @Mixin(ItemFrame.class)
-public abstract class ItemFrameMixin {
+public abstract class ItemFrameMixin extends HangingEntityMixin {
+
+    @Shadow
+    public abstract ItemStack getItem();
 
     @Inject(method = "interact", at = @At("HEAD"), cancellable = true)
     private void itemFrameFiller(Player player, InteractionHand hand, Vec3 location, CallbackInfoReturnable<InteractionResult> cir) {
         ItemStack item = player.getItemInHand(hand);
 
-        if (item.getItem() != Items.FILLED_MAP || item.get(DataComponents.CUSTOM_DATA) == null || !item.get(DataComponents.CUSTOM_DATA).contains("height")) return;
+        if (
+                item.getItem() != Items.FILLED_MAP
+                || item.get(DataComponents.CUSTOM_DATA) == null
+                || !item.get(DataComponents.CUSTOM_DATA).contains("height"))
+            return;
+
         int width = item.get(DataComponents.CUSTOM_DATA).copyTag().getInt("width").get();
         int height = item.get(DataComponents.CUSTOM_DATA).copyTag().getInt("height").get();
         int[][] mapIds = new int[height][width];
@@ -47,10 +56,9 @@ public abstract class ItemFrameMixin {
             }
         }
 
-        //surely theres a less silly way to getPos without casting shennigans right
-        ItemFrame interactedItemFrame = (ItemFrame) (Object) this;
-        BlockPos topLeftItemFramePosition = interactedItemFrame.getPos();
-        Vec3i direction = interactedItemFrame.getDirection().getUnitVec3i();
+        //this is lowkey still a silly way, i guess mixins are jst silly
+        BlockPos topLeftItemFramePosition = this.getPos();
+        Vec3i direction = this.getDirection().getUnitVec3i();
 
         int yDirec = direction.getY();
         Vec3i widthDirection, heightDirection;
@@ -76,7 +84,7 @@ public abstract class ItemFrameMixin {
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 BlockPos currentItemFrameBlockPos = topLeftItemFramePosition.offset(widthDirection.multiply(x).offset(heightDirection.multiply(y)));
-                List<ItemFrame> itemFramesAtBlock = interactedItemFrame.level().getEntitiesOfClass(ItemFrame.class, new AABB(currentItemFrameBlockPos));
+                List<ItemFrame> itemFramesAtBlock = this.level().getEntitiesOfClass(ItemFrame.class, new AABB(currentItemFrameBlockPos));
                 if (itemFramesAtBlock.isEmpty()) {failed = true; break blockCheck;}
                 for (ItemFrame itemFrame : itemFramesAtBlock)
                     if (itemFrame.getDirection().getUnitVec3i().equals(direction) && itemFrame.getItem().is(Items.AIR)) { itemFrames[y][x] = itemFrame; break; }
@@ -132,11 +140,10 @@ public abstract class ItemFrameMixin {
     //ok... this one......... i failed my calc test so i mightve been a little out of it
     @Inject(method = "dropItem(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/Entity;Z)V", at = @At("HEAD"))
     private void itemFrameFilledRemover(ServerLevel level, Entity causedBy, boolean withFrame, CallbackInfo ci) {
-        ItemFrame interactedItemFrame = (ItemFrame) (Object) this;
-        if (interactedItemFrame.getItem().get(DataComponents.CUSTOM_DATA) == null || !interactedItemFrame.getItem().get(DataComponents.CUSTOM_DATA).contains("parentMapPos")) return;
-        BlockPos blockPosOfParent = tagToBlockPos(interactedItemFrame.getItem().get(DataComponents.CUSTOM_DATA).copyTag().getCompound("parentMapPos").get());
-        Vec3i direction = interactedItemFrame.getDirection().getUnitVec3i();
-        List<ItemFrame> itemFramesAtParentBlocks = interactedItemFrame.level().getEntitiesOfClass(ItemFrame.class, new AABB(blockPosOfParent));
+        if (this.getItem().get(DataComponents.CUSTOM_DATA) == null || !this.getItem().get(DataComponents.CUSTOM_DATA).contains("parentMapPos")) return;
+        BlockPos blockPosOfParent = tagToBlockPos(this.getItem().get(DataComponents.CUSTOM_DATA).copyTag().getCompound("parentMapPos").get());
+        Vec3i direction = this.getDirection().getUnitVec3i();
+        List<ItemFrame> itemFramesAtParentBlocks = this.level().getEntitiesOfClass(ItemFrame.class, new AABB(blockPosOfParent));
         if (itemFramesAtParentBlocks.isEmpty()) return;
         ItemFrame parentItemFrame = null;
         for (ItemFrame itemFrame : itemFramesAtParentBlocks) //i love that these are entities and not block entities :steam_happy:
@@ -155,7 +162,7 @@ public abstract class ItemFrameMixin {
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 BlockPos currentItemFrameBlockPos = blockPosOfParent.offset(widthDirection.multiply(x).offset(heightDirection.multiply(y)));
-                List<ItemFrame> itemFramesAtBlock = interactedItemFrame.level().getEntitiesOfClass(ItemFrame.class, new AABB(currentItemFrameBlockPos));
+                List<ItemFrame> itemFramesAtBlock = this.level().getEntitiesOfClass(ItemFrame.class, new AABB(currentItemFrameBlockPos));
                 if (itemFramesAtBlock.isEmpty()) {return;}
                 for (ItemFrame itemFrame : itemFramesAtBlock)
                     if (itemFrame.getDirection().getUnitVec3i().equals(direction) && itemFrame.getItem().get(DataComponents.CUSTOM_DATA) != null && itemFrame.getItem().get(DataComponents.CUSTOM_DATA).contains("parentMapPos")) { itemFrames[y][x] = itemFrame; break; }
@@ -169,6 +176,6 @@ public abstract class ItemFrameMixin {
             for (ItemFrame itemFrame : itemFrameRow)
                 itemFrame.setItem(ItemStack.EMPTY);
 
-        interactedItemFrame.spawnAtLocation(level, itemDropped);
+        this.spawnAtLocation(level, itemDropped);
     }
 }

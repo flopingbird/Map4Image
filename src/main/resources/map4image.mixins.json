@@ -3,10 +3,12 @@
   "package": "com.flopingbird.map4image.mixin",
   "compatibilityLevel": "JAVA_25",
   "mixins": [
+    "BlockAttachedEntityMixin",
+    "EntityMixin",
+    "HangingEntityMixin",
     "ItemFrameMixin"
   ],
   "client": [
-
   ],
   "injectors": {
     "defaultRequire": 1
