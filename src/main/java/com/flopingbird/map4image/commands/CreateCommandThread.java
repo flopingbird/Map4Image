@@ -21,10 +21,12 @@ import static com.flopingbird.map4image.GenerateMapArt.*;
 public class CreateCommandThread extends Thread {
     CommandContext<CommandSourceStack> command = null;
     MapGenerationUtils.DitherType dither = null;
+    MapGenerationUtils.FlipType flip = null;
 
-    CreateCommandThread(CommandContext<CommandSourceStack> command, MapGenerationUtils.DitherType dither) {
+    CreateCommandThread(CommandContext<CommandSourceStack> command, MapGenerationUtils.DitherType dither, MapGenerationUtils.FlipType flip) {
         this.command = command;
         this.dither = dither;
+        this.flip = flip;
     }
 
     public void run() {
@@ -39,7 +41,8 @@ public class CreateCommandThread extends Thread {
             throw new RuntimeException(e);
         }
 
-        int[][] maps = generateMapArt(image, player.serverLevel(), dither, IntegerArgumentType.getInteger(command, "width"), IntegerArgumentType.getInteger(command, "height"));
+        assert player != null;
+        int[][] maps = generateMapArt(image, player.level(), dither, flip, IntegerArgumentType.getInteger(command, "width"), IntegerArgumentType.getInteger(command, "height"));
 
 
         if (maps.length == 1 && maps[0].length == 1) {
@@ -48,7 +51,7 @@ public class CreateCommandThread extends Thread {
             mapItem.set(DataComponents.MAP_ID, new MapId(maps[0][0]));
             player.addItem(mapItem);
         } else {
-            int previewMap = generateMapArt(image, player.serverLevel(), dither, 128, 128)[0][0];
+            int previewMap = generateMapArt(image, player.level(), dither, flip, 128, 128)[0][0];
             ItemStack finalMapItem = createPreviewMap(previewMap, maps[0].length, maps.length);
             player.addItem(finalMapItem);
             command.getSource().sendSystemMessage(Component.literal("Map art generated!"));

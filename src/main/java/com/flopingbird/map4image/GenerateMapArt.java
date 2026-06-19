@@ -15,17 +15,18 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
 import java.util.ArrayList;
 
 import static com.flopingbird.map4image.utils.MapGenerationUtils.*;
 
 public class GenerateMapArt {
     //returns 2d array of mapIds in [y][x] format, first element of first array is the top left.
-    public static int[][] generateMapArt(BufferedImage image, ServerLevel level, DitherType ditherType, int width, int height) {
+    public static int[][] generateMapArt(BufferedImage image, ServerLevel serverLevel, DitherType ditherType, FlipType flipType, int width, int height) {
+        image = flipImage(image, flipType);
+
         //TODO keep map IDs in different serverLevel or try to get rid of having to pass it
-        ServerLevel serverLevel = level;
-        Image rescaledImage = image.getScaledInstance(width, height, Image.SCALE_REPLICATE);
+        Image rescaledImage = image.getScaledInstance(width, height, Image.SCALE_SMOOTH);
         image = new BufferedImage(width, height, image.getType());
         Graphics2D graphics = image.createGraphics();
         graphics.drawImage(rescaledImage, 0, 0, null);
@@ -40,8 +41,6 @@ public class GenerateMapArt {
             byte[][] newColorMap = new byte[colorMapHeight + heightDiff][colorMapWidth];
             byte[] newRow = new byte[colorMapWidth];
             //change all elements to byte zero, byte zero on the minecraft map color chart is transparent
-            for (int i = 0; i < newRow.length; i++)
-                newRow[i] = 0;
             int oldMapScanIndex = 0;
             for (int y = 0; y < newColorMap.length; y++) {
                 if (y < heightDiff/2 || y > heightDiff/2-1+colorMapHeight)
@@ -79,7 +78,7 @@ public class GenerateMapArt {
         int[][] maps = new int[colorMapHeight/128][colorMapWidth/128];
         for (int y = 0; y < colorMapHeight; y+=128)
             for (int x = 0; x < colorMapWidth; x+=128){
-                byte[][] subColorMap = copySubrange(colorMap, x, y, 128, 128);
+                byte[][] subColorMap = copySubrange(colorMap, x, y);
                 MapItemSavedData mapData = MapItemSavedData.createFresh(0.0, 0.0, (byte)1, false, false, serverLevel.dimension());
                 for (int j = 0; j < 128; j++) {
                     for (int i = 0; i < 128; i++) {
@@ -87,8 +86,8 @@ public class GenerateMapArt {
                     }
                 }
                 mapData = mapData.locked();
-                MapId newMapID = level.getFreeMapId();
-                level.getLevel().setMapData(newMapID, mapData);
+                MapId newMapID = serverLevel.getFreeMapId();
+                serverLevel.getLevel().setMapData(newMapID, mapData);
                 maps[y/128][x/128] = newMapID.id();
             }
         return maps;
@@ -112,24 +111,58 @@ public class GenerateMapArt {
     }
 
     //taken directly from https://stackoverflow.com/questions/27343663/how-to-obtain-a-part-of-a-2d-array, removed uncessary checks
-    private static byte[][] copySubrange(byte[][] source, int x, int y, int width, int height) {
-        byte[][] dest = new byte[height][width];
-        for (int destY = 0; destY < height; destY++) {
+    private static byte[][] copySubrange(byte[][] source, int x, int y) {
+        byte[][] dest = new byte[128][128];
+        for (int destY = 0; destY < 128; destY++) {
             byte[] srcRow = source[(y + destY)];
-            System.arraycopy(srcRow, x, dest[destY], 0, width);
+            System.arraycopy(srcRow, x, dest[destY], 0, 128);
         }
         return dest;
     }
 
     public static BufferedImage getBufferedImageFromLink(String link) {
         try {
-            return ImageIO.read(new URL(link).openStream());
+            return ImageIO.read(
+                    URI.create(link)
+                            .toURL()
+                            .openStream()
+            );
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
+    public static BufferedImage flipImage(BufferedImage image, FlipType flipType) {
+        if (flipType == FlipType.NONE) {
+            return image;
+        }
 
+        int width = image.getWidth();
+        int height = image.getHeight();
 
+        BufferedImage flippedImage = new BufferedImage(width, height, image.getType());
+        Graphics2D g = flippedImage.createGraphics();
+        if (flipType == FlipType.HORIZONTAL) {
+            g.drawImage(image,
+                    width, 0, 0, height,
+                    0, 0, width, height,
+                    null);
 
+        } else if (flipType == FlipType.VERTICAL) {
+            g.drawImage(image,
+                    0, height, width, 0,
+                    0, 0, width, height,
+                    null);
+
+        } else if (flipType == FlipType.BOTH) {
+            g.drawImage(image,
+                    width, height, 0, 0,
+                    0, 0, width, height,
+                    null);
+        }
+
+        g.dispose();
+
+        return flippedImage;
+    }
 }
